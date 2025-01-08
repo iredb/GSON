@@ -1,40 +1,49 @@
+package com.example.gson
+
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.recyclerview.widget.RecyclerView
-import com.example.gson.R
 import com.bumptech.glide.Glide
+import timber.log.Timber
 
-class PhotoAdapter(private var imageUrlList: List<String>, private val onClick: (String) -> Unit) :
-    RecyclerView.Adapter<PhotoAdapter.MyViewHolder>() {
+class PhotoAdapter(
+    private val context: Context,
+    private val photoUrls: List<String>
+) : RecyclerView.Adapter<PhotoAdapter.PhotoViewHolder>() {
 
-    class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val imageViewItem: ImageView = view.findViewById(R.id.imageView)
-    }
+    inner class PhotoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val imageView: ImageView = view.findViewById(R.id.imageView)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.rview_item, parent, false)
-        return MyViewHolder(view)
-    }
+        init {
+            view.setOnClickListener {
+                val url = photoUrls[adapterPosition]
+                val clipboard =
+                    context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = ClipData.newPlainText("Photo URL", url)
+                clipboard.setPrimaryClip(clip)
 
-    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        Glide.with(holder.imageViewItem)
-            .load(imageUrlList[position])
-            .centerCrop()
-            .into(holder.imageViewItem)
-        holder.imageViewItem.setOnClickListener {
-            onClick(imageUrlList[position])
+                Timber.i("Copied to clipboard: $url")
+            }
         }
     }
 
-    override fun getItemCount(): Int {
-        return imageUrlList.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PhotoViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.rview_item, parent, false)
+        return PhotoViewHolder(view)
     }
 
-    fun updateList(urls: List<String>) {
-        imageUrlList = urls
-        notifyDataSetChanged()
+    override fun onBindViewHolder(holder: PhotoViewHolder, position: Int) {
+        val url = photoUrls[position]
+        Glide.with(context)
+            .load(url)
+            .into(holder.imageView)
     }
+
+    override fun getItemCount() = photoUrls.size
 }

@@ -17,7 +17,7 @@ data class PhotoPage(
     val pages: Int,
     val perpage: Int,
     val total: Int,
-    val photo: List<Photo>
+    val photo: ArrayList<Photo>
 )
 
 data class Wrapper(
